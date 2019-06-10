@@ -1,20 +1,20 @@
 
-function HtmlWebpackChunkPrefix(options) {
-  this.prefix = options.prefix;
-}
-    
-HtmlWebpackChunkPrefix.prototype.apply = function (compiler) {
-  const SELF = this;
-  compiler.plugin('compilation', function(compilation) {
-    compilation.plugin('html-webpack-plugin-before-html-processing', function(htmlPluginData, callback) {
-      const { assets } = htmlPluginData;
-      const js = assets.js.map(item => SELF.prefix + item);
-      const css = assets.css.map(item => SELF.prefix + item);
-      assets.js = js;
-      assets.css = css;
-      callback();
+class HtmlWebpackChunkPrefix {
+  constructor(options) {
+    this.prefix = options.prefix;
+  }
+
+  apply(compiler) {
+    compiler.hooks.compilation.tap('html-webpack-chunk-prefix-plugin', compilation => {
+      compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing.tap('html-webpack-chunk-prefix-plugin', htmlPluginData => {
+        const { assets } = htmlPluginData;
+        const js = assets.js.map(item => this.prefix + item);
+        const css = assets.css.map(item => this.prefix + item);
+        assets.js = js;
+        assets.css = css;
+      });
     });
-  })
+  }
 }
 
 module.exports = HtmlWebpackChunkPrefix;
