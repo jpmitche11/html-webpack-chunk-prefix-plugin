@@ -6,14 +6,21 @@ class HtmlWebpackChunkPrefix {
 
   apply(compiler) {
     compiler.hooks.compilation.tap('html-webpack-chunk-prefix-plugin', compilation => {
-      compilation.hooks.htmlWebpackPluginBeforeHtmlProcessing.tap('html-webpack-chunk-prefix-plugin', htmlPluginData => {
-        const { assets } = htmlPluginData;
-        const js = assets.js.map(item => this.prefix + item);
-        const css = assets.css.map(item => this.prefix + item);
-        assets.js = js;
-        assets.css = css;
+      compilation.hooks.htmlWebpackPluginAlterAssetTags.tap('html-webpack-chunk-prefix-plugin', htmlPluginData => {
+        const { head, body } = htmlPluginData;
+        head.forEach(tag => this.processTag(tag));
+        body.forEach(tag => this.processTag(tag));
       });
     });
+  }
+
+  processTag(tag){
+    if (tag.tagName === 'script' && tag.attributes.src) {
+      tag.attributes.src = this.prefix + tag.attributes.src
+    }
+    else if (tag.tagName === 'link' && tag.attributes.href) {
+      tag.attributes.href = this.prefix + tag.attributes.href
+    }
   }
 }
 
